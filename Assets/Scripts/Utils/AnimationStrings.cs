@@ -11,4 +11,11 @@ public class AnimationStrings
 	public static string IsOnCeiling => "isOnCeiling";
 	public static string Jump => "Jump";
 	public static string yVelocity => "yVelocity";
+	public static string Attack => "Attack";
+	public static string CanMove => "CanMove";
+	public static string HasTarget => "HasTarget";
+
+	public static string AttackCoolDown => "AttackCoolDown";
+
+	public static string IsAlive => "IsAlive";
 }

@@ -17,8 +17,12 @@ public class PlayerController : MonoBehaviour
 	// 현재 사용할 Speed 값을 반환하는 프로퍼티
 	public float CurrentMoveSpeed
 	{
-		get 
+		get
 		{
+			if (!animator.GetBool(AnimationStrings.CanMove))
+			{
+				return 0;
+			}
 			// 움직이지 않는 다면 0을 반환
 			// 만약에 벽에 붙어 있다면 0을 반환
 			if (!IsMoving || touchingDirections.IsOnWall)
@@ -85,18 +89,22 @@ public class PlayerController : MonoBehaviour
 	Rigidbody2D rb;
 	Animator animator;
 	TouchingDirections touchingDirections;
+	Damageable damageable;
 
 	private void Awake()
 	{
 		rb = GetComponent<Rigidbody2D>();
 		animator = GetComponent<Animator>();
 		touchingDirections = GetComponent<TouchingDirections>();
+		damageable = GetComponent<Damageable>();
 	}
 
 	private void FixedUpdate()
 	{
-		rb.velocity = new Vector3(moveInput.x * CurrentMoveSpeed, rb.velocity.y);
+		if (!damageable.IsAlive)
+			return;
 
+		rb.velocity = new Vector3(moveInput.x * CurrentMoveSpeed, rb.velocity.y);
 		animator.SetFloat(AnimationStrings.yVelocity, rb.velocity.y);
 	}
 
@@ -110,6 +118,8 @@ public class PlayerController : MonoBehaviour
 
 	private void SetFacingDirection(Vector2 moveInput)
 	{
+		if (!damageable.IsAlive)
+			return;
 		// 오른쪽 키를 눌렀는데 오른쪽을 바라보는 상태가 아니면
 		if (moveInput.x > 0 && !IsFacingRight)
 		{
@@ -145,4 +155,14 @@ public class PlayerController : MonoBehaviour
 			rb.velocity = new Vector2(rb.velocity.x, _jumpImpulse);
 		}
 	}
+
+	public void OnAttack(InputAction.CallbackContext context)
+	{
+		if(context.started && touchingDirections.IsGrounded)
+		{
+			// 공격 애니메이션 재생
+			animator.SetTrigger(AnimationStrings.Attack);
+		}
+	}
+
 }
