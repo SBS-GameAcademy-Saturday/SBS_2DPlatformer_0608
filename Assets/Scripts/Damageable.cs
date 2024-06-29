@@ -1,10 +1,21 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Net.NetworkInformation;
+using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.Events;
 
 public class Damageable : MonoBehaviour
 {
+	public UnityEvent<Vector2> KnockbackEvent;
+	public UnityEvent<float, float> HealthChangeEvent;
+
+	public bool LockVelocity
+	{
+		get { return animator.GetBool(AnimationStrings.LockVelocity); }
+		set { animator.SetBool(AnimationStrings.LockVelocity, value); }
+	}
+
 	[SerializeField] private float _maxHealth = 100;
 	[SerializeField] private float _health = 100;
 	[SerializeField] private bool _isAlive = true;
@@ -91,6 +102,49 @@ public class Damageable : MonoBehaviour
 		{
 			Health -= damage;
 			isInvincible = true;
+		}
+		return false;
+	}
+
+	public bool GetHit(int damage, Vector2 knockback)
+	{
+		if(IsAlive && !isInvincible)
+		{
+			Health -= damage;
+			isInvincible = true;
+
+			animator.SetTrigger(AnimationStrings.Hit);
+
+			HealthEvents.characterDamaged?.Invoke(gameObject, damage);
+
+			LockVelocity = true;
+
+			KnockbackEvent.Invoke(knockback);
+			HealthChangeEvent.Invoke(Health, MaxHealth);
+
+			return true;
+		}
+		return false;
+	}
+
+	public bool Heal(int healthRestore)
+	{
+		if (IsAlive && Health < MaxHealth)
+		{
+			// 내가 실제로 체력을 얼마큼 회복했는지에 대한 값이 없다
+			//Health += healthRestore;
+			//if(Health > MaxHealth)
+			//	Health = MaxHealth;
+
+			// 체력을 최대 얼마큼 회복시킬수 있는지에 대한 값
+			float maxHeal = Mathf.Max(MaxHealth - Health, 0);
+			// 실제로 체력을 회복시킬수 있는 값
+			float actualHeal = Mathf.Min(maxHeal, healthRestore);
+			Health += actualHeal;
+
+			HealthChangeEvent.Invoke(Health, MaxHealth);
+			HealthEvents.characterHealed?.Invoke(gameObject,(int)actualHeal);
+			return true;
 		}
 		return false;
 	}

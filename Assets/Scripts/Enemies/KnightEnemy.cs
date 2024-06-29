@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Experimental.AI;
+using UnityEngine.InputSystem.iOS;
 
 [RequireComponent(typeof(Rigidbody2D))]
 [RequireComponent(typeof(CapsuleCollider2D))]
@@ -15,6 +16,7 @@ public class KnightEnemy : MonoBehaviour
 	}
 
 	[SerializeField] private float walkSpeed = 3.0f;
+	[SerializeField] private float _walkStopRate = 0.6f;
 	[SerializeField] private DetectionZone hitBoxDetectionZone;
 
 	public WalkableDirection WalkDirection
@@ -78,6 +80,8 @@ public class KnightEnemy : MonoBehaviour
 		animator = GetComponent<Animator>();
 		touchingDirections = GetComponent<TouchingDirections>();
 		damageable = GetComponent<Damageable>();
+
+		damageable.KnockbackEvent.AddListener(OnKnockback);
 	}
 
 	// Update is called once per frame
@@ -103,8 +107,13 @@ public class KnightEnemy : MonoBehaviour
         {
 			FlipDirection();
 		}
-		if(CanMove)
-			rb.velocity = new Vector2(walkSpeed * walkDirectionVector.x, rb.velocity.y);
+		if (!damageable.LockVelocity)
+		{
+			if (CanMove)
+				rb.velocity = new Vector2(walkSpeed * walkDirectionVector.x, rb.velocity.y);
+			else
+				rb.velocity = new Vector2(Mathf.Lerp(rb.velocity.x, 0, _walkStopRate), rb.velocity.y);
+		}
 		// ³Ë¹é Ã³¸®
 	}
 
@@ -121,5 +130,8 @@ public class KnightEnemy : MonoBehaviour
 		}
 	}
 
-
+	public void OnKnockback(Vector2 knockback)
+	{
+		rb.velocity = new Vector2(knockback.x, knockback.y + rb.velocity.y);
+	}
 }

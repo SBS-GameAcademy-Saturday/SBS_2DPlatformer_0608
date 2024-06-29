@@ -97,6 +97,8 @@ public class PlayerController : MonoBehaviour
 		animator = GetComponent<Animator>();
 		touchingDirections = GetComponent<TouchingDirections>();
 		damageable = GetComponent<Damageable>();
+
+		damageable.KnockbackEvent.AddListener(OnKnockback);
 	}
 
 	private void FixedUpdate()
@@ -104,7 +106,11 @@ public class PlayerController : MonoBehaviour
 		if (!damageable.IsAlive)
 			return;
 
-		rb.velocity = new Vector3(moveInput.x * CurrentMoveSpeed, rb.velocity.y);
+		if(!damageable.LockVelocity)
+		{
+			rb.velocity = new Vector3(moveInput.x * CurrentMoveSpeed, rb.velocity.y);
+		}
+
 		animator.SetFloat(AnimationStrings.yVelocity, rb.velocity.y);
 	}
 
@@ -163,6 +169,11 @@ public class PlayerController : MonoBehaviour
 			// 공격 애니메이션 재생
 			animator.SetTrigger(AnimationStrings.Attack);
 		}
+	}
+
+	private void OnKnockback(Vector2 knockback)
+	{
+		rb.velocity = new Vector2(knockback.x, rb.velocity.y + knockback.y);
 	}
 
 }

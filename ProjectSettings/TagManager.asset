@@ -16,8 +16,8 @@ TagManager:
   - GroundDetection
   - Ground
   - EnemyHitBox
-  - 
-  - 
+  - PlayerHitBox
+  - Item
   - 
   - 
   - 

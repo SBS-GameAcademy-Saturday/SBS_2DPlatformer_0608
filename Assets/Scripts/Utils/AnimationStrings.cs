@@ -18,4 +18,7 @@ public class AnimationStrings
 	public static string AttackCoolDown => "AttackCoolDown";
 
 	public static string IsAlive => "IsAlive";
+	public static string Hit => "Hit";
+
+	public static string LockVelocity => "LockVelocity";
 }
